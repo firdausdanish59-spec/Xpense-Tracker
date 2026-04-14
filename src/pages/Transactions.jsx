@@ -109,7 +109,6 @@ export const Transactions = () => {
         console.error(err);
         setError(getErrorMessage(err));
       } finally {
-        setIsLoading(true);
         setIsLoading(false);
       }
     }
@@ -162,7 +161,7 @@ export const Transactions = () => {
     }
   };
 
-  const handleDeleteOne = async (id) => {
+  const handleDeleteTx = async (id) => {
     
     setIsLoading(true);
     setError('');
@@ -368,7 +367,7 @@ export const Transactions = () => {
                variant="secondary" 
                onClick={() => {
                  if(window.confirm('Are you sure you want to delete this transaction?')) {
-                   handleDeleteOne(editingTx.id);
+                   handleDeleteTx(editingTx.id);
                    setIsModalOpen(false);
                  }
                }}
