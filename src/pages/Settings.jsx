@@ -1,6 +1,7 @@
 import { getErrorMessage } from '../utils/errorHandler';
 import { useState, useEffect } from 'react';
-import { User, Palette, Database, Trash2, Shield, Download } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { User, Palette, Database, Trash2, Shield, Download, PieChart, BarChart3, Repeat, Target, ChevronRight } from 'lucide-react';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { GlassCard } from '../components/GlassCard';
 import { PageHeader } from '../components/PageHeader';
@@ -14,6 +15,7 @@ import { SkeletonLoader } from '../components/SkeletonLoader';
 export const Settings = () => {
   const { userProfile, refreshProfile, loading } = useData();
   const { isMobile } = useBreakpoint();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -103,13 +105,38 @@ export const Settings = () => {
       <PageHeader title="Settings" subtitle="Personalize your expense tracking experience" />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        {/* Mobile Hub - Visible only on mobile */}
+        {isMobile && (
+          <GlassCard style={{ padding: '1rem' }}>
+            <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem', paddingLeft: '0.5rem' }}>Quick Access</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {[
+                { path: '/budget', label: 'Budget Planner', icon: PieChart, color: '#4FACFE' },
+                { path: '/analytics', label: 'Analytics', icon: BarChart3, color: '#43E97B' },
+                { path: '/subscriptions', label: 'Subscriptions', icon: Repeat, color: '#FA709A' },
+                { path: '/goals', label: 'Goals', icon: Target, color: '#667EEA' },
+              ].map(item => (
+                <div key={item.path} onClick={() => navigate(item.path)}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', cursor: 'pointer' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: `rgba(${item.color === '#4FACFE' ? '79,172,254' : item.color === '#43E97B' ? '67,233,123' : item.color === '#FA709A' ? '250,112,154' : '102,126,234'}, 0.15)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <item.icon size={20} color={item.color} />
+                    </div>
+                    <span style={{ fontWeight: 600 }}>{item.label}</span>
+                  </div>
+                  <ChevronRight size={18} color="var(--text-muted)" />
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+        )}
         {/* Profile */}
         <GlassCard>
           <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)', fontSize: '1.05rem' }}>
             <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--gradient-1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><User size={16} color="white" /></div>
             Profile Settings
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
             <Input label="Display Name" value={localName} onChange={e => setLocalName(e.target.value)} />
             <Input label="Monthly Income (₹)" type="number" value={localIncome} onChange={e => setLocalIncome(e.target.value)} style={{ fontFamily: 'var(--font-mono)' }} />
             <Input label="UPI ID" value={localUpi} onChange={e => setLocalUpi(e.target.value)} placeholder="name@upi" />

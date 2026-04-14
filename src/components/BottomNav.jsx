@@ -18,12 +18,12 @@ const BottomNav = ({ onAddClick }) => {
   ];
 
   return (
-    <nav className="bottom-nav">
+    <nav className="bottom-nav" style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))' }}>
       {tabs.map((tab, i) =>
         tab.isAdd ? (
-          <div key="add" className="bottom-nav-item" onClick={onAddClick}>
-            <div className="bottom-nav-add">
-              <Plus size={24} strokeWidth={2.5} />
+          <div key="add" className="bottom-nav-item" onClick={onAddClick} style={{ cursor: 'pointer', zIndex: 100 }}>
+            <div className="bottom-nav-add" style={{ boxShadow: '0 4px 20px rgba(102,126,234,0.5)' }}>
+              <Plus size={26} strokeWidth={2.5} />
             </div>
           </div>
         ) : (
@@ -31,9 +31,10 @@ const BottomNav = ({ onAddClick }) => {
             key={tab.path}
             className={`bottom-nav-item ${pathname === tab.path ? 'active' : ''}`}
             onClick={() => navigate(tab.path)}
+            style={{ padding: '0.5rem 0', cursor: 'pointer' }}
           >
-            <tab.icon size={20} />
-            <span>{tab.label}</span>
+            <tab.icon size={22} />
+            <span style={{ fontSize: '0.7rem', marginTop: '4px' }}>{tab.label}</span>
           </div>
         )
       )}

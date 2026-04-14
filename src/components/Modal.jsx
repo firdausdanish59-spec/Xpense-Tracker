@@ -44,7 +44,7 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
               border: isMobile ? 'none' : '1px solid var(--border-color)',
               borderRadius: isMobile ? '20px 20px 0 0' : 'var(--radius-card)',
               padding: isMobile ? '1.25rem' : '2rem',
-              paddingBottom: isMobile ? 'calc(1.25rem + env(safe-area-inset-bottom))' : '2rem',
+              paddingBottom: isMobile ? 'calc(6rem + env(safe-area-inset-bottom))' : '2rem',
               borderTop: isMobile ? 'none' : '3px solid transparent',
               borderImage: isMobile ? 'none' : 'var(--gradient-1) 1',
               borderImageSlice: isMobile ? undefined : '1',

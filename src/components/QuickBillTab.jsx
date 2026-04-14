@@ -444,7 +444,7 @@ export const QuickBillTab = () => {
         <form onSubmit={handleSaveOuting} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <Input label="Outing Name" required value={newOuting.name} onChange={e => setNewOuting({...newOuting, name: e.target.value})} placeholder="e.g. Monday Biryani" />
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }}>
             <Input label="Date" type="date" required value={newOuting.date} onChange={e => setNewOuting({...newOuting, date: e.target.value})} />
             <Input label="Total Bill (₹)" type="number" required value={newOuting.totalAmount || ''} onChange={e => handleTotalChange(e.target.value)} style={{ fontFamily: 'var(--font-mono)' }} placeholder="0" />
           </div>

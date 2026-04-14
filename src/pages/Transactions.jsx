@@ -192,27 +192,31 @@ export const Transactions = () => {
         title="Transactions" 
         subtitle="Manage and track your income and expenses"
         actions={
-          <>
-             <Button variant="secondary" onClick={handleExportCSV} title="Export CSV" style={{ padding: '0.6rem 0.75rem', borderRadius: 'var(--radius-btn)' }}>
-              <Download size={18} />
-             </Button>
-             <Button onClick={openAddModal} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: 'var(--radius-btn)' }}>
-               <Plus size={18} /> Record Expense
-             </Button>
-          </>
+          !isMobile && (
+            <>
+               <Button variant="secondary" onClick={handleExportCSV} title="Export CSV" style={{ padding: '0.6rem 0.75rem', borderRadius: 'var(--radius-btn)' }}>
+                <Download size={18} />
+               </Button>
+               <Button onClick={openAddModal} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: 'var(--radius-btn)' }}>
+                 <Plus size={18} /> Record Expense
+               </Button>
+            </>
+          )
         }
       />
       
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <div>
-          <h2 style={{ margin: 0 }}>Transactions</h2>
-          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Manage and track your income and expenses</p>
+      {!isMobile && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <div>
+            <h2 style={{ margin: 0 }}>Transactions History</h2>
+            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Detailed view of your cash flow</p>
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button onClick={handleExportCSV} className="btn-secondary" style={{ padding: '0.6rem' }}><Download size={18} /></button>
+            <button onClick={openAddModal} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Plus size={18} /> Record</button>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button onClick={handleExportCSV} className="btn-secondary" style={{ padding: '0.6rem' }}><Download size={18} /></button>
-          <button onClick={openAddModal} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Plus size={18} /> {isMobile ? '' : 'Record'}</button>
-        </div>
-      </div>
+      )}
 
       <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1rem', marginBottom: '1.5rem', alignItems: isMobile ? 'stretch' : 'center' }}>
         <div style={{ position: 'relative', flex: 1 }}>
