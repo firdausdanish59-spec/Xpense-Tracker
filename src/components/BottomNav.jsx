@@ -21,9 +21,20 @@ const BottomNav = ({ onAddClick }) => {
     <nav className="bottom-nav" style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))' }}>
       {tabs.map((tab, i) =>
         tab.isAdd ? (
-          <div key="add" className="bottom-nav-item" onClick={onAddClick} style={{ cursor: 'pointer', zIndex: 100 }}>
-            <div className="bottom-nav-add" style={{ boxShadow: '0 4px 20px rgba(102,126,234,0.5)' }}>
-              <Plus size={26} strokeWidth={2.5} />
+          <div key="add" className="bottom-nav-item" style={{ position: 'relative', overflow: 'visible' }}>
+            <div 
+              className="bottom-nav-add" 
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddClick();
+              }}
+              style={{ 
+                boxShadow: '0 4px 20px rgba(102,126,234,0.5)',
+                cursor: 'pointer',
+                zIndex: 2000 
+              }}
+            >
+              <Plus size={28} strokeWidth={2.5} />
             </div>
           </div>
         ) : (
