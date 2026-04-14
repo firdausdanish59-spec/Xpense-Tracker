@@ -14,12 +14,15 @@ import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
+import InstallPrompt from './components/InstallPrompt';
+import OfflineBar from './components/OfflineBar';
 
 function App() {
   return (
     <AuthProvider>
       <DataProvider>
         <Router>
+          <OfflineBar />
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={<Login />} />
@@ -44,6 +47,7 @@ function App() {
               </ProtectedRoute>
             } />
           </Routes>
+          <InstallPrompt />
         </Router>
       </DataProvider>
     </AuthProvider>

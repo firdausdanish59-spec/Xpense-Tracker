@@ -1,6 +1,7 @@
 import { getErrorMessage } from '../utils/errorHandler';
 import { useState, useEffect } from 'react';
 import { User, Palette, Database, Trash2, Shield, Download } from 'lucide-react';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 import { GlassCard } from '../components/GlassCard';
 import { PageHeader } from '../components/PageHeader';
 import { Input } from '../components/Input';
@@ -12,6 +13,7 @@ import { SkeletonLoader } from '../components/SkeletonLoader';
 
 export const Settings = () => {
   const { userProfile, refreshProfile, loading } = useData();
+  const { isMobile } = useBreakpoint();
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');

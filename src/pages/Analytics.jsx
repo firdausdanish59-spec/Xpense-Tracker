@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, Area, AreaChart } from 'recharts';
 import { Leaf, Users, FastForward } from 'lucide-react';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 import { GlassCard } from '../components/GlassCard';
 import { PageHeader } from '../components/PageHeader';
 import { useData } from '../context/DataContext';
@@ -12,6 +13,7 @@ const GRADIENTS = ['#667EEA', '#43E97B', '#F5576C', '#FA709A', '#4FACFE', '#A18C
 
 export const Analytics = () => {
   const { transactions, loading } = useData();
+  const { isMobile } = useBreakpoint();
   const [timeRange, setTimeRange] = useState('Month');
   const [simulatorValue, setSimulatorValue] = useState(10);
 
@@ -91,30 +93,26 @@ export const Analytics = () => {
                   <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#43E97B" stopOpacity={0.3}/><stop offset="100%" stopColor="#43E97B" stopOpacity={0}/>
                   </linearGradient>
-                  <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#FC8181" stopOpacity={0.3}/><stop offset="100%" stopColor="#FC8181" stopOpacity={0}/>
-                  </linearGradient>
                 </defs>
-                <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `₹${v/1000}k`} />
-                <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px', fontFamily: 'var(--font-mono)' }} />
-                <Area type="monotone" dataKey="income" stroke="#43E97B" strokeWidth={2} fill="url(#incomeGrad)" dot={false} />
-                <Area type="monotone" dataKey="expense" stroke="#FC8181" strokeWidth={2} fill="url(#expenseGrad)" dot={false} />
+                <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} tick={isMobile ? (props) => (props.index % 2 === 0 ? <text {...props}>{props.payload.value}</text> : null) : undefined} />
+                <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px' }} />
+                <Area type="monotone" dataKey="income" stroke="#43E97B" fill="#43E97B" fillOpacity={0.1} strokeWidth={3} />
+                <Area type="monotone" dataKey="expense" stroke="#F5576C" fill="#F5576C" fillOpacity={0.1} strokeWidth={3} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </GlassCard>
 
-        <GlassCard style={{ height: '350px', display: 'flex', flexDirection: 'column' }}>
-          <h3 style={{ marginBottom: '1rem', fontSize: '1.05rem' }}>Top Categories</h3>
-          <div style={{ flex: 1 }}>
+        <GlassCard>
+          <h3 style={{ marginBottom: '1.25rem' }}>Top Categories</h3>
+          <div style={{ height: isMobile ? '200px' : '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData} layout="vertical" margin={{ left: 20 }}>
+              <BarChart data={barData} layout="vertical">
                 <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px', fontFamily: 'var(--font-mono)' }} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
-                <Bar dataKey="amount" radius={[0, 6, 6, 0]} barSize={20}>
-                  {barData.map((_, i) => <Cell key={i} fill={GRADIENTS[i % GRADIENTS.length]} />)}
+                <YAxis dataKey="name" type="category" stroke="var(--text-primary)" fontSize={12} width={60} />
+                <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px' }} />
+                <Bar dataKey="amount" radius={[0, 4, 4, 0]} barSize={20}>
+                  {barData.map((entry, index) => <Cell key={index} fill={GRADIENTS[index % GRADIENTS.length]} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -122,20 +120,21 @@ export const Analytics = () => {
         </GlassCard>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
-        {/* Spending Distribution */}
-        <GlassCard style={{ height: '350px', display: 'flex', flexDirection: 'column' }}>
-          <h3 style={{ marginBottom: '1rem', fontSize: '1.05rem' }}>Spending Distribution</h3>
-          <div style={{ flex: 1, position: 'relative' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={pieData} innerRadius={60} outerRadius={90} paddingAngle={2} dataKey="value" stroke="none">
-                  {pieData.map((e, i) => <Cell key={i} fill={e.color} />)}
-                </Pie>
-                <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px', fontFamily: 'var(--font-mono)' }} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1.5fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+        <GlassCard>
+          <h3 style={{ marginBottom: '1.5rem' }}>Spending Distribution</h3>
+          <div style={{ height: '240px', position: 'relative', display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: 'center' }}>
+            <div style={{ width: '100%', height: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={pieData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                    {pieData.map((entry, index) => <Cell key={index} fill={entry.color} />)}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', pointerEvents: 'none' }}>
               <span style={{ fontSize: '1.1rem', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>₹{totalExpense.toLocaleString()}</span>
             </div>
           </div>

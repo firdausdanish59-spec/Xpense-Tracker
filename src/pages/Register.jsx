@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Eye, EyeOff, Layout, Zap, Target, Check } from 'lucide-react';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 export const Register = () => {
   const [name, setName] = useState('');
@@ -17,6 +18,7 @@ export const Register = () => {
   
   const { register, loginWithGoogle, error } = useAuth();
   const navigate = useNavigate();
+  const { isMobile } = useBreakpoint();
 
   const getStrength = (pass) => {
     if (!pass) return { label: '', color: 'transparent', width: '0%', text: '' };
@@ -71,13 +73,20 @@ export const Register = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: '#0A0A0F', color: 'white', overflow: 'hidden' }}>
+    <div style={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      flexDirection: isMobile ? 'column' : 'row', 
+      background: '#0A0A0F', 
+      color: 'white', 
+      overflow: isMobile ? 'auto' : 'hidden' 
+    }}>
       
-      {/* Left Side (Same as Login) */}
+      {/* Left Side */}
       <div style={{ 
-        flex: '0 0 40%', 
+        flex: isMobile ? 'none' : '0 0 40%', 
         background: 'var(--gradient-1)', 
-        padding: '3rem', 
+        padding: isMobile ? '2rem' : '3rem', 
         display: 'flex', 
         flexDirection: 'column', 
         justifyContent: 'center',
@@ -87,13 +96,13 @@ export const Register = () => {
         <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '300px', height: '300px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', filter: 'blur(50px)' }} />
         <div style={{ position: 'relative', zIndex: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
-            <div style={{ width: '48px', height: '48px', background: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ color: 'var(--gradient-1)', fontWeight: 900, fontSize: '1.5rem' }}>X</span>
+            <div style={{ width: '40px', height: '40px', background: 'white', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: 'var(--gradient-1)', fontWeight: 900, fontSize: '1.25rem' }}>X</span>
             </div>
-            <h1 style={{ fontSize: '2rem', margin: 0, fontWeight: 800 }}>Xpense</h1>
+            <h1 style={{ fontSize: '1.5rem', margin: 0, fontWeight: 800 }}>Xpense</h1>
           </div>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 800, lineHeight: 1.1, marginBottom: '1.5rem' }}>Join the community.</h2>
-          <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '300px' }}>Start tracking today and reach your financial goals with ease.</p>
+          <h2 style={{ fontSize: isMobile ? '1.75rem' : '2.5rem', fontWeight: 800, lineHeight: 1.1, marginBottom: '1rem' }}>Join the community.</h2>
+          {!isMobile && <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '300px' }}>Start tracking today and reach your financial goals with ease.</p>}
         </div>
       </div>
 

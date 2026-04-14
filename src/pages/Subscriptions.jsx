@@ -2,6 +2,7 @@ import { getErrorMessage } from '../utils/errorHandler';
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, AlertTriangle, Trash2, Repeat } from 'lucide-react';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 import { GlassCard } from '../components/GlassCard';
 import { PageHeader } from '../components/PageHeader';
 import { Button } from '../components/Button';
@@ -15,6 +16,7 @@ import { format } from 'date-fns';
 
 export const Subscriptions = () => {
   const { subscriptions, refreshSubscriptions, loading } = useData();
+  const { isMobile } = useBreakpoint();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -84,7 +86,7 @@ export const Subscriptions = () => {
         actions={<Button onClick={() => setIsModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: 'var(--radius-btn)' }}><Plus size={18} /> Add</Button>} />
 
       {/* Stat Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
         {STAT_CARDS.map((c, i) => (
           <motion.div key={c.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
             <GlassCard>

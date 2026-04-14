@@ -14,6 +14,7 @@ import { Toast } from '../components/Toast';
 import { format, isAfter, subDays, startOfMonth, differenceInDays } from 'date-fns';
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import { useAuth } from '../context/AuthContext';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 const CATEGORY_GRADIENTS = {
   'Food 🍔': { gradient: 'var(--gradient-5)', color: '#FA709A' },
@@ -38,6 +39,7 @@ function getGreeting() {
 export const Dashboard = () => {
   const { transactions, budget, userProfile, nextBill, loading, refreshTransactions } = useData();
   const { user } = useAuth();
+  const { isMobile } = useBreakpoint();
   
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -143,11 +145,11 @@ export const Dashboard = () => {
   if (loading) return <SkeletonLoader />;
 
   return (
-    <div style={{ position: 'relative', minHeight: '100%', paddingBottom: '5rem' }}>
+    <div style={{ position: 'relative', minHeight: '100%', paddingBottom: isMobile ? '7rem' : '5rem' }}>
       <Toast message={error} type="error" onClose={() => setError('')} />
       <PageHeader 
-        title={`${getGreeting()}, ${user?.displayName?.split(' ')[0] || profileName || 'there'} 👋`} 
-        subtitle="Here's what's happening with your money today."
+        title={`${isMobile ? 'Hey' : getGreeting()}, ${user?.displayName?.split(' ')[0] || profileName || 'there'} 👋`} 
+        subtitle={isMobile ? "Your money status" : "Here's what's happening with your money today."}
       />
 
       {/* HERO BALANCE CARD */}
@@ -155,77 +157,82 @@ export const Dashboard = () => {
         <div style={{
           background: 'var(--gradient-1)',
           borderRadius: 'var(--radius-card)',
-          padding: '2rem 2.5rem',
+          padding: isMobile ? '1.5rem' : '2rem 2.5rem',
           marginBottom: '2rem',
           position: 'relative', overflow: 'hidden',
           boxShadow: '0 12px 40px rgba(102, 126, 234, 0.3)'
         }}>
           {/* Grid pattern overlay */}
           <div style={{ position: 'absolute', inset: 0, opacity: 0.06, backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.5) 39px, rgba(255,255,255,0.5) 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.5) 39px, rgba(255,255,255,0.5) 40px)', backgroundSize: '40px 40px' }} />
-          {/* Floating blobs */}
-          <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
-          <div style={{ position: 'absolute', bottom: '-60px', left: '30%', width: '150px', height: '150px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
           
-          <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem' }}>
+          <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
-              <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', opacity: 0.85, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500 }}>Total Balance</p>
-              <h2 style={{ margin: '0 0 1rem', fontSize: '3rem', fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '-0.02em' }}>
+              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', opacity: 0.85, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500 }}>Total Balance</p>
+              <h2 style={{ margin: '0 0 1rem', fontSize: isMobile ? '2rem' : '3rem', fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '-0.02em' }}>
                 {currency}{balance.toLocaleString()}
               </h2>
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <span style={{ background: 'rgba(72, 187, 120, 0.25)', color: '#48BB78', padding: '0.3rem 0.75rem', borderRadius: 'var(--radius-pill)', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <span style={{ background: 'rgba(72, 187, 120, 0.25)', color: '#48BB78', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-pill)', fontSize: '0.7rem', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                   +{currency}{income.toLocaleString()}
                 </span>
-                <span style={{ background: 'rgba(252, 129, 129, 0.25)', color: '#FC8181', padding: '0.3rem 0.75rem', borderRadius: 'var(--radius-pill)', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                <span style={{ background: 'rgba(252, 129, 129, 0.25)', color: '#FC8181', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-pill)', fontSize: '0.7rem', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                   -{currency}{expense.toLocaleString()}
                 </span>
               </div>
             </div>
             
-            {/* Savings Ring */}
-            <div style={{ position: 'relative', width: '100px', height: '100px' }}>
-              <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-                <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="3" />
-                <circle cx="18" cy="18" r="15.9" fill="none" stroke="white" strokeWidth="3" 
-                  strokeDasharray={`${savingsRate} ${100 - savingsRate}`} strokeLinecap="round"
-                  style={{ transition: 'stroke-dasharray 1s ease' }} />
-              </svg>
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-                <span style={{ fontSize: '1.1rem', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>{savingsRate}%</span>
-                <span style={{ fontSize: '0.6rem', opacity: 0.7, textTransform: 'uppercase' }}>saved</span>
+            {!isMobile && (
+              <div style={{ position: 'relative', width: '100px', height: '100px' }}>
+                <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+                  <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="3" />
+                  <circle cx="18" cy="18" r="15.9" fill="none" stroke="white" strokeWidth="3" 
+                    strokeDasharray={`${savingsRate} ${100 - savingsRate}`} strokeLinecap="round"
+                    style={{ transition: 'stroke-dasharray 1s ease' }} />
+                </svg>
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '1.1rem', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>{savingsRate}%</span>
+                  <span style={{ fontSize: '0.6rem', opacity: 0.7, textTransform: 'uppercase' }}>saved</span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </motion.div>
 
       {/* 4 STAT CARDS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(220px, 1fr))', 
+        gap: '0.75rem', 
+        marginBottom: '2rem' 
+      }}>
         {STAT_CARDS.map((card, i) => (
           <motion.div key={card.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
-            <GlassCard hover style={{ position: 'relative' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: card.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 12px ${card.color}33` }}>
-                  <card.icon size={20} color="white" />
+            <GlassCard hover style={{ position: 'relative', padding: isMobile ? '1rem' : '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <div style={{ width: isMobile ? '32px' : '40px', height: isMobile ? '32px' : '40px', borderRadius: '10px', background: card.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <card.icon size={isMobile ? 16 : 20} color="white" />
                 </div>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{card.label}</span>
+                <span style={{ fontSize: isMobile ? '0.7rem' : '0.85rem', color: 'var(--text-secondary)' }}>{isMobile ? card.label.replace('Monthly ', '') : card.label}</span>
               </div>
-              <p style={{ fontSize: '1.5rem', fontFamily: card.isMono === false ? 'var(--font-heading)' : 'var(--font-mono)', fontWeight: 700, margin: '0 0 0.25rem' }}>
+              <p style={{ fontSize: isMobile ? '1.1rem' : '1.5rem', fontFamily: card.isMono === false ? 'var(--font-heading)' : 'var(--font-mono)', fontWeight: 700, margin: '0' }}>
                 {typeof card.value === 'number' ? `${currency}${card.value.toLocaleString()}` : card.value}
               </p>
-              <span style={{ position: 'absolute', bottom: '1rem', right: '1.5rem', fontSize: '0.75rem', fontFamily: 'var(--font-mono)', fontWeight: 600, color: card.change.startsWith('+') ? 'var(--color-income)' : 'var(--color-expense)', background: card.change.startsWith('+') ? 'rgba(72,187,120,0.12)' : 'rgba(252,129,129,0.12)', padding: '0.15rem 0.5rem', borderRadius: 'var(--radius-badge)' }}>
-                {card.change}
-              </span>
             </GlassCard>
           </motion.div>
         ))}
       </div>
 
       {/* MIDDLE ROW */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: isMobile ? '1fr' : '1.5fr 1fr', 
+        gap: '1.5rem', 
+        marginBottom: '1.5rem' 
+      }}>
         
         {/* Spending Chart */}
-        <GlassCard>
+        <GlassCard style={{ minHeight: '280px' }}>
           <h3 style={{ marginBottom: '1.25rem', fontSize: '1.1rem' }}>Spending Overview</h3>
           <div style={{ height: '220px' }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -236,7 +243,7 @@ export const Dashboard = () => {
                     <stop offset="100%" stopColor="#764BA2" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
+                <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={10} tickLine={false} axisLine={false} />
                 <Tooltip 
                   contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px', fontFamily: 'var(--font-mono)' }}
                   itemStyle={{ color: 'var(--text-primary)' }}
@@ -248,38 +255,28 @@ export const Dashboard = () => {
         </GlassCard>
 
         {/* Quick Stats Panel */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <GlassCard style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'var(--gradient-5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Flame size={22} color="white" />
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'row' : 'column', gap: '1rem', overflowX: isMobile ? 'auto' : 'visible', paddingBottom: isMobile ? '0.5rem' : '0' }}>
+          <GlassCard style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: isMobile ? '200px' : 'auto', flex: 1 }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--gradient-5)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Flame size={20} color="white" />
             </div>
             <div>
-              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>No Spend Streak</p>
-              <p style={{ margin: 0, fontSize: '1.5rem', fontFamily: 'var(--font-mono)', fontWeight: 700, background: 'var(--gradient-5)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{noSpendStreak} days</p>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Streak</p>
+              <p style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#FA709A' }}>{noSpendStreak} days</p>
             </div>
           </GlassCard>
 
-          <GlassCard style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'var(--gradient-3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <CalendarClock size={22} color="white" />
+          <GlassCard style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: isMobile ? '200px' : 'auto', flex: 1 }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--gradient-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <CalendarClock size={20} color="white" />
             </div>
             <div>
-              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Next Bill Due</p>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Next Bill</p>
               {nextBill ? (
-                <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{nextBill.name} — <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-info)' }}>{nextBillDays} days</span></p>
+                <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600 }}>{nextBill.name} <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--color-info)' }}>({nextBillDays}d)</span></p>
               ) : (
-                <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, color: 'var(--color-income)' }}>No upcoming bills ✓</p>
+                <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-income)' }}>All clear ✓</p>
               )}
-            </div>
-          </GlassCard>
-
-          <GlassCard style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'var(--gradient-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Crown size={22} color="white" />
-            </div>
-            <div>
-              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Biggest Expense</p>
-              <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{topCategory[0]?.split(' ')[0]} — <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-expense)' }}>{currency}{topCategory[1]?.toLocaleString()}</span></p>
             </div>
           </GlassCard>
         </div>
@@ -288,9 +285,9 @@ export const Dashboard = () => {
       {/* RECENT TRANSACTIONS */}
       <GlassCard>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Recent Transactions</h3>
-          <a href="/transactions" style={{ color: 'var(--accent-primary)', fontSize: '0.85rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 600 }}>
-            View All <ArrowUpRight size={14} />
+          <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Recent Activity</h3>
+          <a href="/transactions" style={{ color: 'var(--accent-primary)', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 600 }}>
+            See all
           </a>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -298,22 +295,16 @@ export const Dashboard = () => {
             const catInfo = CATEGORY_GRADIENTS[tx.category] || { gradient: 'var(--gradient-1)', color: '#667EEA' };
             return (
               <motion.div key={tx.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-                style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem', borderRadius: '12px', borderLeft: `3px solid ${catInfo.color}`, transition: 'background 0.2s', cursor: 'pointer' }}
-                whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', borderRadius: '12px', background: 'rgba(255,255,255,0.02)' }}
               >
-                <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: catInfo.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
+                <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: catInfo.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
                   {tx.category.split(' ').pop()}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontWeight: 600, fontSize: '0.95rem' }}>{tx.merchant}</p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem' }}>
-                    <span style={{ fontSize: '0.75rem', color: catInfo.color, background: `${catInfo.color}15`, padding: '0.1rem 0.5rem', borderRadius: 'var(--radius-badge)', fontWeight: 600 }}>
-                      {tx.category.split(' ')[0]}
-                    </span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{format(new Date(tx.date), 'MMM dd')}</span>
-                  </div>
+                  <p style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tx.merchant}</p>
+                  <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--text-muted)' }}>{format(new Date(tx.date), 'MMM dd')}</p>
                 </div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '1rem', color: tx.type === 'income' ? 'var(--color-income)' : 'var(--color-expense)' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: isMobile ? '0.9rem' : '1rem', color: tx.type === 'income' ? 'var(--color-income)' : 'var(--color-expense)' }}>
                   {tx.type === 'income' ? '+' : '-'}{currency}{tx.amount.toLocaleString()}
                 </span>
               </motion.div>
@@ -322,37 +313,19 @@ export const Dashboard = () => {
         </div>
       </GlassCard>
 
-      {/* FLOATING ACTION BUTTON */}
-      <motion.button
-        whileHover={{ scale: 1.1, rotate: 45 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setAddModalOpen(true)}
-        className="fab-pulse"
-        style={{
-          position: 'fixed', bottom: '2rem', right: '2rem',
-          width: '60px', height: '60px', borderRadius: '50%',
-          background: 'var(--gradient-1)', color: 'white',
-          border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', zIndex: 10,
-          boxShadow: '0 8px 30px rgba(102, 126, 234, 0.5)'
-        }}
-      >
-        <Plus size={28} strokeWidth={3} />
-      </motion.button>
-
       {/* Quick Add Modal */}
-      <Modal isOpen={isAddModalOpen} onClose={() => setAddModalOpen(false)} title="Record Expense">
-        <form onSubmit={handleQuickAdd} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingBottom: '1rem' }}>
-          <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.5rem' }}>
+      <Modal isOpen={isAddModalOpen} onClose={() => setAddModalOpen(false)} title="Quick Record">
+        <form onSubmit={handleQuickAdd} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
             <Button type="button" variant={newTx.type === 'expense' ? 'primary' : 'secondary'} onClick={() => setNewTx({...newTx, type: 'expense'})} 
-              gradient={newTx.type === 'expense' ? 'var(--gradient-2)' : undefined} style={{ flex: 1, borderRadius: 'var(--radius-pill)' }}>Expense</Button>
+              gradient={newTx.type === 'expense' ? 'var(--gradient-2)' : undefined} style={{ flex: 1, borderRadius: 'var(--radius-pill)', fontSize: '0.8rem' }}>Expense</Button>
             <Button type="button" variant={newTx.type === 'income' ? 'primary' : 'secondary'} onClick={() => setNewTx({...newTx, type: 'income'})} 
-              gradient={newTx.type === 'income' ? 'var(--gradient-4)' : undefined} style={{ flex: 1, borderRadius: 'var(--radius-pill)' }}>Income</Button>
+              gradient={newTx.type === 'income' ? 'var(--gradient-4)' : undefined} style={{ flex: 1, borderRadius: 'var(--radius-pill)', fontSize: '0.8rem' }}>Income</Button>
           </div>
           <Input label="Amount" type="number" placeholder="0.00" value={newTx.amount} onChange={(e) => setNewTx({...newTx, amount: e.target.value})} required style={{ fontFamily: 'var(--font-mono)', fontSize: '1.5rem', textAlign: 'center' }} />
-          <Input label="Merchant / Source" type="text" placeholder={newTx.type === 'expense' ? "e.g. Starbucks" : "e.g. Salary"} value={newTx.merchant} onChange={(e) => setNewTx({...newTx, merchant: e.target.value})} required />
+          <Input label="Where" type="text" placeholder={newTx.type === 'expense' ? "e.g. Starbucks" : "e.g. Salary"} value={newTx.merchant} onChange={(e) => setNewTx({...newTx, merchant: e.target.value})} required />
           <Button type="submit" disabled={isLoading} className="modal-save-btn btn-shimmer">
-            {isLoading ? 'Saving...' : 'Record Transaction'}
+            {isLoading ? 'Saving...' : 'Save'}
           </Button>
         </form>
       </Modal>

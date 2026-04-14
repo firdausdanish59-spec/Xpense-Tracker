@@ -5,6 +5,7 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Eye, EyeOff, Layout, Zap, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
@@ -14,6 +15,7 @@ export const Login = () => {
   
   const { login, loginWithGoogle, error } = useAuth();
   const navigate = useNavigate();
+  const { isMobile } = useBreakpoint();
 
   const handleEmailLogin = async (e) => {
     e.preventDefault();
@@ -41,13 +43,20 @@ export const Login = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: '#0A0A0F', color: 'white', overflow: 'hidden' }}>
+    <div style={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      flexDirection: isMobile ? 'column' : 'row', 
+      background: '#0A0A0F', 
+      color: 'white', 
+      overflow: isMobile ? 'auto' : 'hidden' 
+    }}>
       
-      {/* Left Side - Brand & Features (40%) */}
+      {/* Left Side - Brand & Features */}
       <div style={{ 
-        flex: '0 0 40%', 
+        flex: isMobile ? 'none' : '0 0 40%', 
         background: 'var(--gradient-1)', 
-        padding: '3rem', 
+        padding: isMobile ? '2rem' : '3rem', 
         display: 'flex', 
         flexDirection: 'column', 
         justifyContent: 'center',
@@ -66,22 +75,24 @@ export const Login = () => {
             <h1 style={{ fontSize: '2rem', margin: 0, fontWeight: 800, letterSpacing: '-0.02em' }}>Xpense</h1>
           </div>
 
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 800, lineHeight: 1.1, marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: isMobile ? '1.75rem' : '2.5rem', fontWeight: 800, lineHeight: 1.1, marginBottom: '1.5rem' }}>
             Track smarter.<br />Save better.
           </h2>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '3rem' }}>
-            {[
-              { icon: <Zap size={20} />, text: "Track every rupee you spend" },
-              { icon: <Layout size={20} />, text: "Split bills with friends instantly" },
-              { icon: <Target size={20} />, text: "Reach your savings goals faster" }
-            ].map((item, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '1.1rem', fontWeight: 500, opacity: 0.9 }}>
-                <div style={{ background: 'rgba(255,255,255,0.2)', padding: '0.5rem', borderRadius: '8px' }}>{item.icon}</div>
-                {item.text}
-              </div>
-            ))}
-          </div>
+          {!isMobile && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '3rem' }}>
+              {[
+                { icon: <Zap size={20} />, text: "Track every rupee you spend" },
+                { icon: <Layout size={20} />, text: "Split bills with friends instantly" },
+                { icon: <Target size={20} />, text: "Reach your savings goals faster" }
+              ].map((item, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '1.1rem', fontWeight: 500, opacity: 0.9 }}>
+                  <div style={{ background: 'rgba(255,255,255,0.2)', padding: '0.5rem', borderRadius: '8px' }}>{item.icon}</div>
+                  {item.text}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

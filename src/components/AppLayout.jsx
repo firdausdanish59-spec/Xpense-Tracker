@@ -1,9 +1,10 @@
 import { getErrorMessage } from '../utils/errorHandler';
 import { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Menu, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Sidebar from './Sidebar';
+import BottomNav from './BottomNav';
 import { Modal } from './Modal';
 import { useData } from '../context/DataContext';
 import { addTransaction as addTransactionService } from '../services/transactionService';
@@ -20,7 +21,7 @@ const AppLayout = () => {
   const [error, setError] = useState('');
   const [newTx, setNewTx] = useState({ amount: '', type: 'expense', category: 'Food 🍔', merchant: '', note: '', date: new Date().toISOString().split('T')[0] });
 
-  // Theme management moved to sidebar/settings, but AppLayout ensures it stays applied
+  // Theme management
   useEffect(() => {
     if (userProfile?.theme) {
       document.documentElement.setAttribute('data-theme', userProfile.theme);
@@ -71,44 +72,6 @@ const AppLayout = () => {
   return (
     <div className="app-container" style={{ position: 'relative' }}>
       <Toast message={error} type="error" onClose={() => setError('')} />
-      {/* Mobile top bar */}
-      <div 
-        className="mobile-top-bar"
-        style={{
-          display: 'none',
-          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 30,
-          padding: '1rem 1.25rem',
-          alignItems: 'center', justifyContent: 'space-between',
-          background: 'var(--bg-primary)',
-          opacity: 0.95,
-          backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid var(--border-color)'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button 
-            onClick={() => setMobileOpen(true)}
-            style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}
-          >
-            <Menu size={24} />
-          </button>
-          <span style={{ 
-            fontSize: '1.2rem', fontFamily: 'var(--font-heading)', fontWeight: 800,
-            background: 'var(--gradient-1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
-          }}>Xpense</span>
-        </div>
-      </div>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .sidebar-wrapper { display: none; }
-          .mobile-top-bar { display: flex !important; }
-          .main-content { padding-top: 5rem !important; }
-        }
-        @media (min-width: 769px) {
-          .sidebar-wrapper { display: block; }
-        }
-      `}</style>
       
       <div className="sidebar-wrapper">
         <Sidebar isMobileOpen={isMobileOpen} setMobileOpen={setMobileOpen} />
@@ -125,6 +88,9 @@ const AppLayout = () => {
           <Outlet />
         </motion.div>
       </main>
+
+      {/* Bottom Navigation for Mobile */}
+      <BottomNav onAddClick={() => setGlobalAddOpen(true)} />
 
       <Modal isOpen={isGlobalAddOpen} onClose={() => setGlobalAddOpen(false)} title="Record Expense">
         <form onSubmit={handleGlobalAdd} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

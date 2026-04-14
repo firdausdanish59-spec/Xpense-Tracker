@@ -2,6 +2,7 @@ import { getErrorMessage } from '../utils/errorHandler';
 import { useState, useMemo } from 'react';
 import { Plus, Check, Search, Receipt, ArrowRight, Trash2, Edit2, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 import { GlassCard } from './GlassCard';
 import { Button } from './Button';
 import { Input } from './Input';
@@ -22,6 +23,7 @@ import { formatWhatsAppReminder, formatGroupSummary, formatMonthlyReport, format
 
 export const QuickBillTab = () => {
   const { friends, outings, settlements, refreshQuickBill, loading: dataLoading, dataError } = useData();
+  const { isMobile } = useBreakpoint();
 
   const [activeModal, setActiveModal] = useState(null); // 'outing' | 'friend' | 'settle'
   const [isLoading, setIsLoading] = useState(false);
@@ -321,13 +323,13 @@ export const QuickBillTab = () => {
       </div>
 
       {/* Section 2 - Main CTA */}
-      <div style={{ display: 'flex', gap: '0.75rem' }}>
+      <div style={{ display: 'flex', gap: '0.75rem', flexDirection: isMobile ? 'column' : 'row' }}>
         <Button onClick={() => setActiveModal('outing')} className="btn-shimmer" style={{ flex: 1, padding: '1.2rem', fontSize: '1.1rem', borderRadius: 'var(--radius-card)' }}>
           + Log an Outing
         </Button>
         {outings.length >= 3 && (
-          <Button variant="secondary" onClick={prefillLastOuting} style={{ padding: '0 1.2rem', borderRadius: 'var(--radius-card)' }}>
-            <span style={{ fontSize: '0.8rem', display: 'flex', flexDirection: 'column' }}>Use Last<strong style={{ fontSize: '1rem' }}>Template</strong></span>
+          <Button variant="secondary" onClick={prefillLastOuting} style={{ padding: isMobile ? '1rem' : '0 1.2rem', borderRadius: 'var(--radius-card)' }}>
+            <span style={{ fontSize: '0.8rem', display: 'flex', flexDirection: isMobile ? 'row' : 'column', gap: isMobile ? '0.5rem' : 0, alignItems: 'center', justifyContent: 'center' }}>Use Last<strong style={{ fontSize: '1rem' }}>Template</strong></span>
           </Button>
         )}
       </div>

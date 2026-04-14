@@ -1,6 +1,7 @@
 import { getErrorMessage } from '../utils/errorHandler';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 import { Search, Filter, Download, Mic, Trash2, Edit2, Plus, Calendar, Tag, ReceiptText } from 'lucide-react';
 import { GlassCard } from '../components/GlassCard';
 import { PageHeader } from '../components/PageHeader';
@@ -34,6 +35,7 @@ const CATEGORY_GRADIENTS = {
 
 export const Transactions = () => {
   const { transactions, refreshTransactions, loading } = useData();
+  const { isMobile } = useBreakpoint();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
@@ -48,6 +50,19 @@ export const Transactions = () => {
   const [formData, setFormData] = useState({
     amount: '', type: 'expense', category: 'Food 🍔', merchant: '', date: new Date().toISOString().split('T')[0], note: ''
   });
+
+  const [swipedId, setSwipedId] = useState(null);
+  const touchStart = useRef(null);
+
+  const handleTouchStart = (e) => {
+    touchStart.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e, id) => {
+    const diff = touchStart.current - e.changedTouches[0].clientX;
+    if (diff > 60) setSwipedId(id);   // swipe left
+    if (diff < -60) setSwipedId(null); // swipe right
+  };
 
   const CATEGORIES = ['Food 🍔', 'Transport 🚗', 'Shopping 🛍️', 'Entertainment 🎬', 'Health ⚕️', 'Bills 🧾', 'Education 📚', 'Other 🧩', 'Salary 💰', 'Freelance 💻'];
 
@@ -187,61 +202,56 @@ export const Transactions = () => {
           </>
         }
       />
-
-      {/* Filter & Search Bar */}
-      <GlassCard style={{ marginBottom: '1.5rem', padding: '1rem 1.25rem' }}>
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          
-          {/* Search */}
-          <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
-            <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-            <input 
-              type="text" 
-              className="input-base" 
-              placeholder="Search merchant or note..." 
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              style={{ paddingLeft: '2.75rem', borderRadius: 'var(--radius-pill)' }}
-            />
-          </div>
-
-          {/* Filter Pills */}
-          <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(255,255,255,0.03)', padding: '0.25rem', borderRadius: 'var(--radius-pill)' }}>
-            {FILTER_PILLS.map(fp => (
-              <button 
-                key={fp.key}
-                onClick={() => setFilterType(fp.key)}
-                style={{
-                  background: filterType === fp.key ? fp.gradient : 'transparent',
-                  border: 'none', color: 'white', padding: '0.5rem 1.25rem',
-                  borderRadius: 'var(--radius-pill)', cursor: 'pointer',
-                  fontWeight: 600, fontSize: '0.8rem', transition: 'all 0.2s'
-                }}
-              >
-                {fp.label}
-              </button>
-            ))}
-          </div>
+      
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div>
+          <h2 style={{ margin: 0 }}>Transactions</h2>
+          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Manage and track your income and expenses</p>
         </div>
-      </GlassCard>
-
-      {/* Bulk Actions */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
-        <Button variant="secondary" onClick={() => { setIsSelectionMode(!isSelectionMode); setSelectedIds([]); }} style={{ borderRadius: 'var(--radius-btn)', fontSize: '0.85rem' }}>
-          {isSelectionMode ? 'Cancel Selection' : 'Bulk Select'}
-        </Button>
-        {isSelectionMode && selectedIds.length > 0 && (
-          <Button onClick={handleDeleteSelected} gradient="var(--gradient-2)" style={{ borderRadius: 'var(--radius-btn)' }}>
-            Delete Selected ({selectedIds.length})
-          </Button>
-        )}
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button onClick={handleExportCSV} className="btn-secondary" style={{ padding: '0.6rem' }}><Download size={18} /></button>
+          <button onClick={openAddModal} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Plus size={18} /> {isMobile ? '' : 'Record'}</button>
+        </div>
       </div>
 
-      {/* Grouped Transaction List */}
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1rem', marginBottom: '1.5rem', alignItems: isMobile ? 'stretch' : 'center' }}>
+        <div style={{ position: 'relative', flex: 1 }}>
+          <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+          <input 
+            type="text" 
+            placeholder="Search merchants, notes..." 
+            className="input-base" 
+            style={{ paddingLeft: '3rem' }}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <select 
+            className="input-base" 
+            style={{ width: isMobile ? '100%' : '150px' }}
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+          >
+            <option value="all">All Types</option>
+            <option value="expense">Expenses</option>
+            <option value="income">Income</option>
+          </select>
+          <button className="btn-secondary" onClick={() => setIsSelectionMode(!isSelectionMode)} style={{ flex: isMobile ? 1 : 'none' }}>
+            <Filter size={18} />
+          </button>
+        </div>
+      </div>
+
+      {isSelectionMode && selectedIds.length > 0 && (
+        <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+          <button onClick={handleDeleteSelected} className="btn-danger">Delete Selected ({selectedIds.length})</button>
+        </div>
+      )}
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         {Object.entries(groupedTransactions).map(([dateLabel, group]) => (
           <div key={dateLabel}>
-            {/* Date Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', padding: '0 0.5rem' }}>
               <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)' }}>{dateLabel}</span>
               <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--color-expense)' }}>-₹{group.total.toLocaleString()}</span>
@@ -249,56 +259,77 @@ export const Transactions = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <AnimatePresence>
-                {group.transactions.map((tx, i) => {
+                {group.transactions.map((tx, idx) => {
                   const catInfo = CATEGORY_GRADIENTS[tx.category] || { gradient: 'var(--gradient-1)', color: '#667EEA' };
                   return (
-                    <motion.div 
-                      key={tx.id} layout
-                      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ delay: i * 0.03 }}
-                    >
-                      <GlassCard 
-                        hover
-                        style={{ 
-                          padding: '0.85rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem',
-                          borderLeft: `3px solid ${catInfo.color}`,
-                          border: selectedIds.includes(tx.id) ? `1px solid ${catInfo.color}` : undefined
+                    <div key={tx.id} style={{ position: 'relative', overflow: 'hidden', borderRadius: '12px' }}>
+                      <motion.div 
+                        onTouchStart={handleTouchStart}
+                        onTouchEnd={(e) => handleTouchEnd(e, tx.id)}
+                        style={{
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '1rem', 
+                          padding: '1rem', 
+                          background: selectedIds.includes(tx.id) ? 'rgba(102, 126, 234, 0.1)' : 'rgba(255,255,255,0.02)',
+                          cursor: 'pointer',
+                          transform: swipedId === tx.id ? 'translateX(-70px)' : 'translateX(0)',
+                          transition: 'transform 0.2s ease',
+                          zIndex: 2,
+                          position: 'relative'
                         }}
+                        onClick={() => isSelectionMode ? toggleSelection(tx.id) : handleEditTx(tx)}
                       >
                         {isSelectionMode && (
-                          <input type="checkbox" checked={selectedIds.includes(tx.id)} onChange={() => toggleSelection(tx.id)} style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: catInfo.color }} />
+                          <div style={{ 
+                            width: '20px', height: '20px', borderRadius: '6px', 
+                            border: `2px solid ${selectedIds.includes(tx.id) ? 'var(--accent-primary)' : 'var(--text-muted)'}`,
+                            background: selectedIds.includes(tx.id) ? 'var(--accent-primary)' : 'transparent',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                          }}>
+                            {selectedIds.includes(tx.id) && <Check size={14} color="white" />}
+                          </div>
                         )}
-                        
-                        <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: catInfo.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
+                        <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: catInfo.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', flexShrink: 0 }}>
                           {tx.category.split(' ').pop()}
                         </div>
-
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600 }}>{tx.merchant}</h4>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
-                            <span style={{ fontSize: '0.7rem', color: catInfo.color, background: `${catInfo.color}15`, padding: '0.1rem 0.5rem', borderRadius: 'var(--radius-badge)', fontWeight: 600 }}>
-                              {tx.category.split(' ')[0]}
-                            </span>
-                            {tx.note && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{tx.note}</span>}
+                          <p style={{ margin: 0, fontWeight: 600, fontSize: '1rem', color: 'var(--text-primary)' }}>{tx.merchant}</p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem' }}>
+                            {!isMobile && tx.note && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>• {tx.note}</span>}
                           </div>
                         </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
-                          <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '1rem', color: tx.type === 'income' ? 'var(--color-income)' : 'var(--color-expense)' }}>
-                            {tx.type === 'income' ? '+' : '-'}₹{tx.amount.toLocaleString()}
-                          </span>
-                          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{format(new Date(tx.date), 'h:mm a')}</span>
-                          {!isSelectionMode && (
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                               <button disabled={isLoading} onClick={() => openEditModal(tx)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '2px' }}><Edit2 size={14} /></button>
-                               <button disabled={isLoading} onClick={() => handleDeleteOne(tx.id)} style={{ background: 'none', border: 'none', color: 'var(--color-expense)', cursor: 'pointer', padding: '2px' }}><Trash2 size={14} /></button>
-                            </div>
-                          )}
+                        <div style={{ textAlign: 'right' }}>
+                          <p style={{ margin: 0, fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '1.1rem', color: tx.type === 'income' ? 'var(--color-income)' : 'var(--color-expense)' }}>
+                            {tx.type === 'income' ? '+' : '-'}{tx.amount.toLocaleString()}
+                          </p>
+                          {!isMobile && <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--text-muted)' }}>{format(new Date(tx.date), 'hh:mm a')}</p>}
                         </div>
-                      </GlassCard>
-                    </motion.div>
+                      </motion.div>
+                      
+                      {isMobile && swipedId === tx.id && (
+                        <div 
+                          style={{
+                            position: 'absolute',
+                            right: 0, top: 0, bottom: 0,
+                            width: '70px',
+                            background: '#FC8181',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '0 12px 12px 0',
+                            cursor: 'pointer',
+                            zIndex: 1
+                          }}
+                          onClick={() => {
+                            handleDeleteTx(tx.id);
+                            setSwipedId(null);
+                          }}
+                        >
+                          <Trash2 size={24} color="white" />
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </AnimatePresence>

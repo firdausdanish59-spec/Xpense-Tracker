@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { Sparkles, Calendar as CalendarIcon, PartyPopper } from 'lucide-react';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 import { GlassCard } from '../components/GlassCard';
 import { PageHeader } from '../components/PageHeader';
 import { Button } from '../components/Button';
@@ -19,6 +20,7 @@ const BUDGET_COLORS = ['#FA709A', '#4FACFE', '#F5576C', '#667EEA', '#43E97B', '#
 
 export const BudgetPlanner = () => {
   const { budget, transactions, userProfile, refreshBudget, refreshProfile, loading } = useData();
+  const { isMobile } = useBreakpoint();
   const budgets = budget?.categories || [];
   const festivalMode = userProfile?.festivalMode || false;
   const [isLoading, setIsLoading] = useState(false);
@@ -130,49 +132,88 @@ export const BudgetPlanner = () => {
       </GlassCard>
 
       {/* Category Cards Grid */}
-      <h2 style={{ marginBottom: '1rem', fontSize: '1.2rem' }}>Category Budgets</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1rem' }}>
-        {budgetData.categories.map((cat, i) => (
-          <motion.div key={cat.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-            <GlassCard hover>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h3 style={{ margin: 0, fontSize: '1rem' }}>{cat.category}</h3>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-badge)', color: cat.statusColor, background: `${cat.color}15` }}>
-                  {cat.status === 'Over Budget' ? 'Oops! You went over 🚨' : cat.status}
-                </span>
+      <h2 style={{ marginBottom: '1rem', fontSize: isMobile ? '1.1rem' : '1.25rem' }}>Budget Health</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1.5fr', gap: '1.5rem', marginBottom: '2rem' }}>
+        
+        {/* Left: Overall Health */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <GlassCard style={{ textAlign: 'center', height: 'fit-content' }}>
+            <h3 style={{ marginBottom: '1rem', fontSize: '1rem' }}>Overall Utilization</h3>
+            <div style={{ height: '200px', position: 'relative' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <RechartsTooltip />
+                  <Pie data={budgetData.categories} innerRadius={60} outerRadius={80} dataKey="spent" nameKey="category" paddingAngle={4} stroke="none">
+                    {budgetData.categories.map((c, i) => <Cell key={i} fill={c.color} />)}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', pointerEvents: 'none' }}>
+                <span style={{ fontSize: '1.5rem', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>{overallPercent.toFixed(0)}%</span>
+                <span style={{ fontSize: '0.6rem', opacity: 0.7, textTransform: 'uppercase' }}>spent</span>
               </div>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Spent: <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>₹{cat.spent.toLocaleString()}</span></span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>₹{cat.allocated.toLocaleString()}</span>
-              </div>
-              
-              <div style={{ height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
-                <motion.div initial={{ width: 0 }} animate={{ width: `${cat.percent}%` }} transition={{ duration: 1, ease: 'easeOut' }}
-                  style={{ height: '100%', background: cat.gradient, borderRadius: '4px' }} />
-              </div>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.75rem' }}>
-                <span style={{ fontSize: '0.8rem', color: cat.statusColor, fontFamily: 'var(--font-mono)' }}>
-                  {cat.actualPercent >= 100 ? `Over by ₹${(cat.spent - cat.allocated).toLocaleString()}` : `₹${(cat.allocated - cat.spent).toLocaleString()} left`}
-                </span>
-                <button onClick={() => { setSelectedBudget(cat); setEditAmount(cat.allocated); }} 
-                  style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600 }}>
-                  Edit
-                </button>
-              </div>
-            </GlassCard>
-          </motion.div>
-        ))}
+            </div>
+          </GlassCard>
+
+          <GlassCard style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', padding: '1.25rem' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '15px', background: 'var(--gradient-1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Sparkles size={24} color="white" />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Savings Potential</p>
+              <p style={{ margin: 0, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--color-income)' }}>₹{(budgetData.totalAlloc - budgetData.totalSpent).toLocaleString()}</p>
+            </div>
+          </GlassCard>
+        </div>
+
+        {/* Right: Category List */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <h3 style={{ marginBottom: '0.5rem', fontSize: '1rem', color: 'var(--text-secondary)' }}>By Category</h3>
+          {budgetData.categories.map((cat, i) => (
+            <motion.div key={cat.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+              <GlassCard hover style={{ padding: isMobile ? '1rem' : '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h4 style={{ margin: 0, fontSize: '0.95rem' }}>{cat.category}</h4>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-pill)', color: cat.statusColor, background: `${cat.color}15`, border: `1px solid ${cat.statusColor}30` }}>
+                    {cat.status === 'Over Budget' ? 'Limit Exceeded 🚨' : cat.status}
+                  </span>
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.8rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Spent: <strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>₹{cat.spent.toLocaleString()}</strong></span>
+                  <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>of ₹{cat.allocated.toLocaleString()}</span>
+                </div>
+                
+                <div style={{ height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(cat.percent, 100)}%` }} transition={{ duration: 1, ease: 'easeOut' }}
+                    style={{ height: '100%', background: cat.gradient, borderRadius: '4px' }} />
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.75rem' }}>
+                  <span style={{ fontSize: '0.75rem', color: cat.statusColor, fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                    {cat.percent >= 100 ? `Over by ₹${(cat.spent - cat.allocated).toLocaleString()}` : `₹${(cat.allocated - cat.spent).toLocaleString()} left`}
+                  </span>
+                  <button onClick={() => { setSelectedBudget(cat); setEditAmount(cat.allocated); }} 
+                    style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: '0.4rem 0.8rem', borderRadius: 'var(--radius-pill)', transition: 'all 0.2s' }}>
+                    Edit
+                  </button>
+                </div>
+              </GlassCard>
+            </motion.div>
+          ))}
+        </div>
       </div>
 
-      <Modal isOpen={!!selectedBudget} onClose={() => setSelectedBudget(null)} title="Edit Budget Limit">
+      <Modal isOpen={!!selectedBudget} onClose={() => setSelectedBudget(null)} title="Modify Budget Limit">
         {selectedBudget && (
-          <form onSubmit={handleUpdate}>
-            <h3 style={{ marginBottom: '1rem' }}>{selectedBudget.category}</h3>
-            <Input label="Monthly Allocation Amount (₹)" type="number" required value={editAmount} onChange={e => setEditAmount(e.target.value)} style={{ fontFamily: 'var(--font-mono)' }} />
-            <Button type="submit" disabled={isLoading} style={{ width: '100%', marginTop: '1rem' }}>
-              {isLoading ? 'Saving...' : 'Save Limit'}
+          <form onSubmit={handleUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ textAlign: 'center', padding: '1.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-card)', border: '1px solid var(--border-color)' }}>
+              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Current Limit for {selectedBudget.category}</p>
+              <h2 style={{ margin: 0, fontFamily: 'var(--font-mono)' }}>₹{selectedBudget.allocated.toLocaleString()}</h2>
+            </div>
+            <Input label="New Monthly Allocation (₹)" type="number" required value={editAmount} onChange={e => setEditAmount(e.target.value)} style={{ fontFamily: 'var(--font-mono)' }} />
+            <Button type="submit" disabled={isLoading} className="modal-save-btn">
+              {isLoading ? 'Updating...' : 'Save New Limit'}
             </Button>
           </form>
         )}

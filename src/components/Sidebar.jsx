@@ -14,6 +14,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 const NAV_ITEMS = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard, gradient: 'var(--gradient-1)', color: '#667EEA' },
@@ -28,9 +29,9 @@ const NAV_ITEMS = [
 const Sidebar = ({ isMobileOpen, setMobileOpen }) => {
   const { user, logout } = useAuth();
   const { userProfile } = useData();
+  const { isTablet } = useBreakpoint();
 
   const handleLogout = async () => {
-    
     try {
       await logout();
       console.log("Logged out successfully.");
@@ -53,7 +54,7 @@ const Sidebar = ({ isMobileOpen, setMobileOpen }) => {
       
       <aside 
         style={{
-          width: '260px',
+          width: isTablet ? '72px' : '260px',
           height: '100vh',
           display: 'flex',
           flexDirection: 'column',
@@ -63,27 +64,31 @@ const Sidebar = ({ isMobileOpen, setMobileOpen }) => {
           position: isMobileOpen ? 'fixed' : 'sticky',
           top: 0,
           left: 0,
-          overflow: 'hidden'
+          overflow: 'hidden',
+          transition: 'width 0.3s ease'
         }}
       >
         {/* Subtle left glow */}
         <div style={{ position: 'absolute', left: 0, top: '30%', width: '2px', height: '40%', background: 'var(--gradient-1)', filter: 'blur(4px)', opacity: 0.5 }} />
 
         {/* Logo */}
-        <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+        <div style={{ padding: isTablet ? '1rem' : '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', justifyContent: isTablet ? 'center' : 'flex-start' }}>
           <div style={{ 
             width: '40px', height: '40px', borderRadius: '12px', background: 'var(--gradient-1)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white',
-            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
+            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+            flexShrink: 0
           }}>
             <Coins size={22} />
           </div>
-          <span style={{ 
-            fontSize: '1.4rem', fontFamily: 'var(--font-heading)', fontWeight: 800, letterSpacing: '-0.02em',
-            background: 'var(--gradient-1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
-          }}>
-            Xpense
-          </span>
+          {!isTablet && (
+            <span style={{ 
+              fontSize: '1.4rem', fontFamily: 'var(--font-heading)', fontWeight: 800, letterSpacing: '-0.02em',
+              background: 'var(--gradient-1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
+            }}>
+              Xpense
+            </span>
+          )}
         </div>
 
         {/* Nav Items */}
@@ -111,13 +116,16 @@ const Sidebar = ({ isMobileOpen, setMobileOpen }) => {
                     width: '34px', height: '34px', borderRadius: '10px',
                     background: isActive ? gradient : `rgba(${hexToRgb(color)}, 0.1)`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    flexShrink: 0
                   }}>
                     <Icon size={18} color={isActive ? 'white' : color} />
                   </div>
-                  <span style={isActive ? { background: gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } : {}}>
-                    {label}
-                  </span>
+                  {!isTablet && (
+                    <span style={isActive ? { background: gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } : {}}>
+                      {label}
+                    </span>
+                  )}
                 </>
               )}
             </NavLink>
@@ -139,49 +147,58 @@ const Sidebar = ({ isMobileOpen, setMobileOpen }) => {
           >
             {({ isActive }) => (
               <>
-                <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ 
+                  width: '34px', height: '34px', borderRadius: '10px', 
+                  background: 'rgba(255,255,255,0.06)', 
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0 
+                }}>
                   <Settings size={18} color="var(--text-muted)" />
                 </div>
-                Settings
+                {!isTablet && "Settings"}
               </>
             )}
           </NavLink>
           
           <div className="user-card" style={{ 
             display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem',
-            background: 'rgba(255,255,255,0.03)', borderRadius: '12px', justifyContent: 'space-between'
+            background: 'rgba(255,255,255,0.03)', borderRadius: '12px', justifyContent: isTablet ? 'center' : 'space-between'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               {user?.photoURL ? (
                 <img 
                   src={user.photoURL} 
                   alt="avatar"
-                  style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid var(--gradient-1)' }} 
+                  style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid var(--gradient-1)', flexShrink: 0 }} 
                 />
               ) : (
                 <div style={{ 
                   width: '36px', height: '36px', borderRadius: '50%', background: 'var(--gradient-1)', 
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '0.9rem' 
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '0.9rem', flexShrink: 0
                 }}>
                   {user?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
                 </div>
               )}
-              <div style={{ overflow: 'hidden' }}>
-                <p style={{ margin: 0, fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                  {userProfile?.name || user?.displayName || 'User'}
-                </p>
-                <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                  {user?.email}
-                </p>
-              </div>
+              {!isTablet && (
+                <div style={{ overflow: 'hidden' }}>
+                  <p style={{ margin: 0, fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                    {userProfile?.name || user?.displayName || 'User'}
+                  </p>
+                  <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                    {user?.email}
+                  </p>
+                </div>
+              )}
             </div>
-            <button 
-              onClick={handleLogout} 
-              title="Logout"
-              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.25rem', display: 'flex' }} 
-            >
-              <LogOut size={18} />
-            </button>
+            {!isTablet && (
+              <button 
+                onClick={handleLogout} 
+                title="Logout"
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.25rem', display: 'flex' }} 
+              >
+                <LogOut size={18} />
+              </button>
+            )}
           </div>
         </div>
       </aside>

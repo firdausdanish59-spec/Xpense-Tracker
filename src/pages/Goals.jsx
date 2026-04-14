@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Coins, Trophy } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 import { GlassCard } from '../components/GlassCard';
 import { PageHeader } from '../components/PageHeader';
 import { Button } from '../components/Button';
@@ -19,6 +20,7 @@ const GOAL_COLORS = [['#667EEA', '#764BA2'], ['#F093FB', '#F5576C'], ['#4FACFE',
 
 export const Goals = () => {
   const { goals, refreshGoals, loading } = useData();
+  const { isMobile } = useBreakpoint();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -91,10 +93,12 @@ export const Goals = () => {
   return (
     <div style={{ paddingBottom: '5rem' }}>
       <Toast message={error} type="error" onClose={() => setError('')} />
-      <PageHeader title="Savings Goals" subtitle="Turn your big dreams into actionable milestones"
-        actions={<Button onClick={() => setIsModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: 'var(--radius-btn)' }}><Plus size={18} /> New Goal</Button>} />
+      <PageHeader title="Savings Goals" subtitle={isMobile ? "Track your big dreams" : "Turn your big dreams into actionable milestones"}
+        actions={<Button onClick={() => setIsModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: 'var(--radius-btn)', padding: isMobile ? '0.6rem' : '0.75rem 1.5rem' }}>
+          <Plus size={18} /> {!isMobile && 'New Goal'}
+        </Button>} />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.5rem' }}>
         <AnimatePresence>
           {goals.map((g, idx) => {
             const percent = Math.min((g.savedAmount / g.targetAmount) * 100, 100);
