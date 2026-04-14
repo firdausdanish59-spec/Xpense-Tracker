@@ -12,7 +12,6 @@ const BottomNav = ({ onAddClick }) => {
   const tabs = [
     { icon: Home, label: 'Home', path: '/' },
     { icon: ReceiptText, label: 'Trans', path: '/transactions' },
-    { icon: Plus, label: 'Add', isAdd: true },
     { icon: Users, label: 'Split', path: '/split' },
     { icon: User, label: 'Me', path: '/settings' },
   ];

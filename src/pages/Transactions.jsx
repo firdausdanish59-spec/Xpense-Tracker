@@ -2,7 +2,7 @@ import { getErrorMessage } from '../utils/errorHandler';
 import { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBreakpoint } from '../hooks/useBreakpoint';
-import { Search, Filter, Download, Mic, Trash2, Edit2, Plus, Calendar, Tag, ReceiptText } from 'lucide-react';
+import { Search, Filter, Download, Mic, Trash2, Edit2, Plus, Calendar, Tag, ReceiptText, ListChecks } from 'lucide-react';
 import { GlassCard } from '../components/GlassCard';
 import { PageHeader } from '../components/PageHeader';
 import { Button } from '../components/Button';
@@ -233,8 +233,8 @@ export const Transactions = () => {
             <option value="expense">Expenses</option>
             <option value="income">Income</option>
           </select>
-          <button className="btn-secondary" onClick={() => setIsSelectionMode(!isSelectionMode)} style={{ flex: isMobile ? 1 : 'none' }}>
-            <Filter size={18} />
+          <button className="btn-secondary" onClick={() => setIsSelectionMode(!isSelectionMode)} title="Select Multiple" style={{ flex: isMobile ? 1 : 'none', background: isSelectionMode ? 'rgba(102,126,234,0.1)' : 'transparent', borderColor: isSelectionMode ? 'var(--gradient-1-start)' : 'var(--border-color)' }}>
+            <ListChecks size={18} color={isSelectionMode ? 'var(--gradient-1-start)' : 'currentColor'} />
           </button>
         </div>
       </div>
@@ -362,6 +362,29 @@ export const Transactions = () => {
           <Button type="submit" disabled={isLoading} className="btn-shimmer" style={{ marginTop: '0.5rem', width: '100%', padding: '1rem', fontSize: '0.95rem' }}>
             {isLoading ? 'Saving...' : (editingTx ? 'Save Changes' : 'Record Transaction')}
           </Button>
+          {editingTx && (
+             <Button 
+               type="button" 
+               variant="secondary" 
+               onClick={() => {
+                 if(window.confirm('Are you sure you want to delete this transaction?')) {
+                   handleDeleteOne(editingTx.id);
+                   setIsModalOpen(false);
+                 }
+               }}
+               style={{ 
+                 marginTop: '0.5rem', 
+                 color: 'var(--color-expense)', 
+                 borderColor: 'var(--color-expense)',
+                 display: 'flex',
+                 alignItems: 'center',
+                 justifyContent: 'center',
+                 gap: '0.5rem'
+               }}
+             >
+               <Trash2 size={16} /> Delete Transaction
+             </Button>
+           )}
         </form>
       </Modal>
     </div>
