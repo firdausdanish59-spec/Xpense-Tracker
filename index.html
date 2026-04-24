@@ -18,8 +18,28 @@
     <meta name="apple-mobile-web-app-title" content="Xpense" />
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
   </head>
-  <body>
-    <div id="root"></div>
+  <body style="background:#0A0A0F;color:white;margin:0;font-family:Inter,sans-serif;">
+    <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:18px;color:#a0aec0;">Loading Xpense...</div></div>
+    <script>
+      // Force unregister service workers and clear caches to fix blank page
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          regs.forEach(function(reg) { reg.unregister(); });
+          if (regs.length > 0) {
+            console.log('Service workers unregistered, reloading...');
+            if ('caches' in window) {
+              caches.keys().then(function(names) {
+                Promise.all(names.map(function(n) { return caches.delete(n); })).then(function() {
+                  window.location.reload();
+                });
+              });
+            } else {
+              window.location.reload();
+            }
+          }
+        });
+      }
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -29,6 +29,7 @@ export const DataProvider = ({ children }) => {
   const [userProfile,   setUserProfile]   = useState(null);
   const [loading,       setLoading]       = useState(true);
   const [dataError,     setDataError]     = useState(null);
+  const [isGlobalAddOpen, setGlobalAddOpen] = useState(false);
 
   // Helper: safely run a query, return fallback on failure
   const safeQuery = async (fn, fallback = []) => {
@@ -139,6 +140,9 @@ export const DataProvider = ({ children }) => {
     budget, groups, friends, outings,
     settlements, summary, nextBill, userProfile,
     loading,
+
+    // Global Add Modal
+    isGlobalAddOpen, setGlobalAddOpen,
 
     // Refresh functions
     refreshTransactions,

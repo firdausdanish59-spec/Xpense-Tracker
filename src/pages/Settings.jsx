@@ -11,6 +11,7 @@ import { useData } from '../context/DataContext';
 import { updateUserProfile } from '../services/userService';
 import { Toast } from '../components/Toast';
 import { SkeletonLoader } from '../components/SkeletonLoader';
+import { clearAllUserData } from '../services/dataManagementService';
 
 export const Settings = () => {
   const { userProfile, refreshProfile, loading } = useData();
@@ -90,9 +91,19 @@ export const Settings = () => {
     const a = document.createElement('a'); a.href = url; a.download = 'xpense-backup.json'; a.click();
   };
 
-  const clearAllData = () => {
-    if(window.confirm('Are you absolutely sure? This will delete all your data and reload the app!')) {
-      localStorage.clear(); window.location.reload();
+  const clearAllData = async () => {
+    if(window.confirm('Are you absolutely sure? This will delete all your data permanently from our servers and reload the app!')) {
+      setIsLoading(true);
+      try {
+        await clearAllUserData();
+        localStorage.clear(); 
+        window.location.reload();
+      } catch (err) {
+        console.error(err);
+        setError('Failed to clear some data. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
